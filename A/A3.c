@@ -1,0 +1,31 @@
+#include <stdio.h>
+
+int main() {
+    int factorial(int);
+    int i, n, sum, max;
+    scanf("%d", &n);
+    scanf("%d", &max);
+    for (i = 1; i < n + 1; i++)
+    {
+        sum += factorial(i);
+    }
+    if (sum < max)
+    {
+        printf("%d", sum);
+    }
+    else
+    {
+        printf("overflow");
+    }
+    return 0;
+}
+
+int factorial(int n)
+{
+    int i, product = 1;
+    for (i = 1; i < n + 1; i++)
+    {
+        product *= i;
+    }
+    return product;
+}
