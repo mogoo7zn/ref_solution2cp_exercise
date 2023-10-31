@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <math.h>
 
 long long gcd(long long a, long long b);
 int main() {
@@ -10,6 +9,8 @@ int main() {
     {
         scanf("%lld%lld%lld", &a,&b,&c);
         int temp;
+
+//        sort a, b, c
         if(a > b)
         {
             temp = a, a = b, b = temp;
@@ -22,6 +23,8 @@ int main() {
         {
             temp = a, a = b, b = temp;
         }
+
+//        judge whether the inputs are legal
         if (a <= 0 || b <= 0 || c <= 0)
         {
             printf("error\n");
@@ -30,24 +33,24 @@ int main() {
         {
             if (a > c - b)
             {
-                //
+//                 divide the greatest common divisor
                 long long divisor1, divisor2, commonDivisor;
                 divisor1 = gcd(a, b);
                 divisor2 = gcd(b, c);
                 commonDivisor = gcd(divisor1, divisor2);
-                a /=commonDivisor, b /= commonDivisor, c /=commonDivisor;
+                a /=  commonDivisor, b /= commonDivisor, c /= commonDivisor;
 
 
-                long double l1, l2;
+//               compare divisors
 
-//                unsigned long long sub, sum;
-//                sub = c - b, sum = c + b;
-//                unsigned long long k1 = a / gcd(a, sub);
-//                unsigned long long k2 = sub / gcd(a, sub);
-//                unsigned long long k3 = a / gcd(a, sum);
-//                unsigned long long k4 = sum / gcd(a, sum);
+                unsigned long long sub, sum;
+                sub = c - b, sum = c + b;
+                unsigned long long k1 = a / gcd(a, sub);
+                unsigned long long k2 = sub / gcd(a, sub);
+                unsigned long long k3 = a / gcd(a, sum);
+                unsigned long long k4 = sum / gcd(a, sum);
 
-                l1 = (long double)a / (c - b), l2 = (long double)(c + b) / a;
+//               (neglect it) l1 = (long double)a * (long double)a, l2 = (long double)b * (long double)b, l3 = (long double)c * (long double)c;
                 if (a == b && b == c)
                 {
                     printf("dengbian\n");
@@ -56,10 +59,9 @@ int main() {
                 {
                     printf("dengyaozhijiao\n");
                 }*/
-//                k1 == k4 && k2 == k3
-                else if (l1 - l2 > -1e-18 && l1 - l2 < 1e-18)
+                else if (k1 == k4 && k2 == k3)
                 {
-                    printf("zhijiao\n");
+                    printf("zhijao\n");
                 }
                 else if (a == b || b == c || c == a)
                 {

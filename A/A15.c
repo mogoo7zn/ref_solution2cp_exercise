@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 void mergeSort(int *array, int l, int r, int opt);
 void printArray(int *array, int size);
 int main() {
@@ -22,16 +21,18 @@ void merge(int *array, int l, int m, int r, int opt)
     // First subarray is L(left)[l..m]
     // Second subarray is R(right)[m+1..r]
     int L[m - l + 1], R[r - m];
-    int i = 0, j = 0, k = l;
+    int i = l, j = 0, k = l;
 
-    for(; i < m - l + 1; i++)
+    for(; i < m + 1; i++)
     {
-        L[i] = array[i];
+        L[j] = array[i];
+        j++;
     }
-    for(; j < r - m; j++)
+    j = 0;
+    for(; j < r - m; i++)
     {
         R[j] = array[i];
-        i++;
+        j++;
     }
 
     if(!opt)
@@ -95,7 +96,6 @@ void mergeSort(int *array, int l, int r, int opt)
         merge(array, l, m, r, opt);
     }
     //int *array, int l, int m, int r, int opt
-    return;
 }
 
 
