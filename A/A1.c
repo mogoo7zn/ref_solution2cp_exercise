@@ -2,12 +2,12 @@
 
 long long gcd(long long a, long long b);
 int main() {
-    long long int a, b, c;
+    unsigned long long int a, b, c;
     long long int n;
     scanf("%lld", &n);
     while(n--)
     {
-        scanf("%lld%lld%lld", &a,&b,&c);
+        scanf("%llu%llu%llu", &a,&b,&c);
         int temp;
 
 //        sort a, b, c
