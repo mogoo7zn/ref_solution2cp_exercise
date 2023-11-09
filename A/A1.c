@@ -1,25 +1,25 @@
 #include <stdio.h>
 
-long long gcd(long long a, long long b);
-int main() {
+unsigned long long gcd(unsigned long long a, unsigned long long b);
+int main(void) {
     unsigned long long int a, b, c;
-    long long int n;
-    scanf("%lld", &n);
+    long n;
+    scanf("%ld", &n);
     while(n--)
     {
         scanf("%llu%llu%llu", &a,&b,&c);
         int temp;
 
 //        sort a, b, c
-        if(a > b)
+        if(a >= b)
         {
             temp = a, a = b, b = temp;
         }
-        if(b > c)
+        if(b >= c)
         {
             temp = b, b = c, c = temp;
         }
-        if(a > b)
+        if(a >= b)
         {
             temp = a, a = b, b = temp;
         }
@@ -34,54 +34,49 @@ int main() {
             if (a > c - b)
             {
 //                 divide the greatest common divisor
-                long long divisor1, divisor2, commonDivisor;
+                unsigned long long divisor1, divisor2, commonDivisor;
                 divisor1 = gcd(a, b);
                 divisor2 = gcd(b, c);
                 commonDivisor = gcd(divisor1, divisor2);
-                a /=  commonDivisor, b /= commonDivisor, c /= commonDivisor;
+                a = a / commonDivisor, b = b / commonDivisor, c = c / commonDivisor;
 
-
-//               compare divisors
-
-                unsigned long long sub, sum;
-                sub = c - b, sum = c + b;
-                unsigned long long k1 = a / gcd(a, sub);
-                unsigned long long k2 = sub / gcd(a, sub);
-                unsigned long long k3 = a / gcd(a, sum);
-                unsigned long long k4 = sum / gcd(a, sum);
-
-//               (neglect it) l1 = (long double)a * (long double)a, l2 = (long double)b * (long double)b, l3 = (long double)c * (long double)c;
                 if (a == b && b == c)
                 {
                     printf("dengbian\n");
                 }
-                /*else if ((a == b || b == c || c == a) && (a*a + b*b == c*c || a*a + c*c == b*b || b*b + c*c == a*a))
-                {
-                    printf("dengyaozhijiao\n");
-                }*/
-                else if (k1 == k4 && k2 == k3)
-                {
-                    printf("zhijao\n");
-                }
+                    /*else if ((a == b || b == c || c == a) && (a*a + b*b == c*c || a*a + c*c == b*b || b*b + c*c == a*a))
+                    {
+                        printf("dengyaozhijiao\n");
+                    }*/
                 else if (a == b || b == c || c == a)
                 {
                     printf("dengyao\n");
                 }
-                else
-                {
-                    printf("putong\n");
+                else if(a != b && b != c && c != a) {
+                    //compare divisors
+                    unsigned long long sub, sum;
+                    sub = c - b, sum = c + b;
+                    unsigned long long k1 = (unsigned long long) (a / gcd(a, sub));
+                    unsigned long long k2 = (unsigned long long) (sub / gcd(a, sub));
+                    unsigned long long k3 = (unsigned long long) (a / gcd(a, sum));
+                    unsigned long long k4 = (unsigned long long) (sum / gcd(a, sum));
+
+                    if (k1 == k4 && k2 == k3) {
+                        printf("zhijao\n");
+                    } else {
+                        printf("putong\n");
+                    }
                 }
-            }
-            else
+            }else
             {
-                printf("error\n");
+                printf("error");
             }
         }
     }
     return 0;
 }
 
-long long gcd(long long a, long long b)
+unsigned long long gcd(unsigned long long a, unsigned long long b)
 {
     if(b == 0)
     {

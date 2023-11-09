@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #define LENGTH 1024
-#define MyLpha(c) ((c >= 'a' && c <= 'z') ? 1 : ((c >= 'A' && c <= 'Z') ? -1 : 0))
+#define MyLpha(c) (((c) >= 'a' && (c) <= 'z') ? 1 : (((c) >= 'A' && (c) <= 'Z') ? -1 : 0))
 
 int main(void)
 {
@@ -27,6 +27,8 @@ int main(void)
         if(string[i] != ' ')
         printf("%c", string[i]);
     }
+
+//    why getchar() is not applicable here?
 
 //    int read;
 //
