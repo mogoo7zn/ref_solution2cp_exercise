@@ -3,7 +3,8 @@
 //
 
 #include <stdio.h>
-#define MAXLENGTH 1000000
+#include <string.h>
+#define MAXLENGTH 100001
 
 int min_max(char *character_set, int left, int right);
 void swap(char *a, char *b);
@@ -13,33 +14,48 @@ int main(void)
 {
     char character_set[MAXLENGTH];
 //    record is the recorded summit of the array(character_set)
-    int i, record, copy_i ,position;
+    int i, record, length ,position;
     scanf_s("%s", character_set);
 
 //    how to find the length of my input?
-    for(i = 0; i < MAXLENGTH; i++)
-    {
-        if(character_set[i] == '\0')
-        {
-            copy_i = i - 1;
-            break;
-        }
-    }
+//    for(i = 0; i < MAXLENGTH; i++)
+//    {
+//        if(character_set[i] == '\0')
+//        {
+//            length = i - 1;
+//            break;
+//        }
+//    }
 
-    while(i--)
+    length = strlen(character_set) - 1;
+
+//    find the summit of character set, the summit is character_set[i]
+    int flag = 0;
+    while(--i)
     {
         if(character_set[i] > character_set[i - 1])
         {
+            flag = 1;
             record = i;
             break;
         }
     }
+
+//    judge whether the permutation is over
+    if(flag == 0)
+    {
+        printf("over!");
+        return 0;
+    }
+
 //    search for the minimum value's position of the numbers bigger than ..[i - 1]
-    position = min_max(character_set, record, copy_i);
+    position = min_max(character_set, record, length);
+
+//    swap the summit element with min_max after it(if there is a min_max)
     swap(character_set + position, character_set + record - 1);
 
 //    sort the array after
-    bubbleSort(character_set, record, copy_i);
+    bubbleSort(character_set, record, length);
     printArray(character_set);
 
     return 0;
@@ -47,11 +63,11 @@ int main(void)
 
 int min_max(char *character_set, int left, int right)
 {
-    int i = left, max, position;
+    int i, max, position = right;
     max = character_set[left];
-    for(i = left; i < right; i++)
+    for(i = right; i > left; i--)
     {
-        if(max > character_set[i] && character_set[i] > character_set[left - 1])
+        if(max > character_set[i] && character_set[i] > character_set[left - 1] && left > 0)
         {
             max = character_set[i];
             position = i;
