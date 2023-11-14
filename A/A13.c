@@ -4,30 +4,23 @@
 
 #include <stdio.h>
 #include <string.h>
-#define MAXLENGTH 100001
+#include <malloc.h>
+//#define MAXLENGTH 100001
 
 int min_max(char *character_set, int left, int right);
 void swap(char *a, char *b);
 void bubbleSort(char *value, int left, int right);
-void printArray(char *character_set);
+//void printArray(char *character_set);
 int main(void)
 {
-    char character_set[MAXLENGTH];
+    char *character_set = NULL;
+    character_set = malloc(1000001);
 //    record is the recorded summit of the array(character_set)
     int i, record, length ,position;
     scanf_s("%s", character_set);
 
-//    how to find the length of my input?
-//    for(i = 0; i < MAXLENGTH; i++)
-//    {
-//        if(character_set[i] == '\0')
-//        {
-//            length = i - 1;
-//            break;
-//        }
-//    }
-
-    length = strlen(character_set) - 1;
+    length = strlen(character_set);
+    i = length;
 
 //    find the summit of character set, the summit is character_set[i]
     int flag = 0;
@@ -49,29 +42,38 @@ int main(void)
     }
 
 //    search for the minimum value's position of the numbers bigger than ..[i - 1]
-    position = min_max(character_set, record, length);
+    position = min_max(character_set, record, length - 1);
 
 //    swap the summit element with min_max after it(if there is a min_max)
     swap(character_set + position, character_set + record - 1);
 
 //    sort the array after
     bubbleSort(character_set, record, length);
-    printArray(character_set);
 
+    printf_s("%s", character_set);
+//    printArray(character_set);
+
+    free(character_set);
     return 0;
 }
 
 int min_max(char *character_set, int left, int right)
 {
-    int i, max, position = right;
+    int i, max, position = right, flag = 0;
     max = character_set[left];
     for(i = right; i > left; i--)
     {
-        if(max > character_set[i] && character_set[i] > character_set[left - 1] && left > 0)
+        if(left > 0 && max > character_set[i] && character_set[i] > character_set[left - 1])
         {
+
+            flag = 1;
             max = character_set[i];
             position = i;
         }
+    }
+    if(flag == 0)
+    {
+        position = left;
     }
     return position;
 }
@@ -86,9 +88,9 @@ void swap(char *a, char *b)
 void bubbleSort(char *value, int left, int right)
 {
     int i, j;
-    for(i = left; i < (right - left); i++)
+    for(i = left; i < right; i++)
     {
-        for(j = left; j < (right - left) - 1; j++)
+        for(j = left; j < right - 1; j++)
         {
             if(value[j] > value[j + 1])
                 swap(value + j, value + j + 1);
