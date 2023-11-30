@@ -14,7 +14,7 @@ void bubbleSort(char *value, int left, int right);
 int main(void)
 {
     char *character_set = NULL;
-    character_set = malloc(1000001);
+    character_set = malloc((1000000 + 1) * sizeof(char));
 //    record is the recorded summit of the array(character_set)
     int i, record, length ,position;
     scanf_s("%s", character_set);
@@ -38,6 +38,9 @@ int main(void)
     if(flag == 0)
     {
         printf("over!");
+
+//        caution:you have malloced some place in memory, please don't forget to free it here
+    free(character_set);
         return 0;
     }
 
