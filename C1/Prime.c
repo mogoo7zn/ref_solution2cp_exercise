@@ -6,5 +6,8 @@
 //Miller-Rabin primality test
 bool is_prime(big_n n, size_t times)
 {
-    if()
+    if(big_n_is_even(n))
+        return FALSE;
+
+
 }

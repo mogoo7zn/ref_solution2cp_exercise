@@ -14,6 +14,7 @@
 #define bool int
 #define Big_n_Size 256
 #define Big_n_Base 256
+#define Len_Cache 8
 #define TRUE (1 == 1)
 #define FALSE !TRUE
 
@@ -37,6 +38,7 @@ bool big_n_equal(big_n a, big_n b);
 bool big_n_is_even(big_n a);
 bool big_n_is_odd(big_n a);
 bool big_n_compare(big_n a, big_n b);
+bool big_n_compare_equal(big_n a, big_n b);
 bool is_big_n_zero(big_n a);
 
 

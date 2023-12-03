@@ -34,8 +34,7 @@ int main(void)
     while(i--) {
         char input_cards[LENGTH];
         int cnt;
-        for(cnt = 0; cnt < LENGTH; cnt++)
-        {
+        for(cnt = 0; cnt < LENGTH; cnt++){
             input_cards[cnt] = *array_ptr;
             array_ptr++;
         }
@@ -44,8 +43,7 @@ int main(void)
 //        gets_s(input_cards, 15);
         if (*input_cards == '0') {
             return 1;
-        }
-        if (straight_flush(input_cards)) {
+        }else if (straight_flush(input_cards)) {
             printf("straight flush\n");
             continue;
         }
@@ -75,25 +73,23 @@ int straight_flush(char *input_cards)
     char ch[5], number[5];
     init_cards(input_cards, ch, number);
 
-    for(i = 4; i > 0; i--)
-    {
-        if(ch[i] > ch[i - 1])
-            return judge;
+    for(i = 4; i > 0; i--){
+        if(ch[i] > ch[i - 1]) return judge;
     }
-    for(i = 4; i > 0; i--)
-    {
-        if(number[i] != number[i - 1] + 1)
-            return judge;
+    for(i = 4; i > 0; i--){
+        if(number[i] != number[i - 1] + 1) return judge;
     }
-    judge = 1;
-    return judge;
+    return judge = 1;
 }
 
 int four_of_a_kind(char *input_cards)
 {
     int judge = 0;
-
-    return judge;
+    int i;
+    for(i = 0; i < LENGTH - 3; i += 3){
+        if(input_cards[i] != input_cards[i + 3]) return judge;
+    }
+    return judge = 1;
 }
 
 int full_house(char *input_cards)

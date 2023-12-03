@@ -89,12 +89,6 @@ void big_n_mul_int(big_n b, uint16_t a)
     }
 }
 
-//b / a = q, b % a = r
-void big_n_div_big_n(big_n a, big_n b, big_n q, big_n r)
-{
-
-}
-
 //r = b % a
 void big_n_mod_int(big_n b, size_t a, size_t *r)
 {
@@ -120,14 +114,6 @@ void big_n_shr(big_n a, size_t sh)
     }
 }
 
-//a>>sh TODO:this part is not finished
-void big_n_shr_bit(big_n a, size_t sh)
-{
-    if(sh == 0)
-        return;
-
-}
-
 //a = a << 8*sh
 void big_n_shl(big_n a, size_t sh)
 {
@@ -140,6 +126,55 @@ void big_n_shl(big_n a, size_t sh)
     }
     for(i = 0; i < sh; i++){
         a[i] =0;
+    }
+}
+
+//a>>sh TODO:this part is not finished
+void big_n_shr_bit(big_n a, size_t sh)
+{
+    if(sh == 0)
+        return;
+
+}
+
+//a<<sh
+void big_n_shl_bit(big_n a, size_t sh)
+{
+    if(sh == 0) return;
+    big_n_shl(a, sh / Len_Cache);
+    sh %= Len_Cache;
+    uint8_t tmp1 = 0, tmp2 = 0;
+    uint16_t mask = Big_n_Base - (1 << (Len_Cache - sh));
+    size_t i;
+    for(i = 0; i < Big_n_Size; i++){
+        tmp1 = mask & a[i];
+        a[i] << sh;
+        a[i] |= tmp2 >> (Len_Cache - sh);
+        tmp2 = tmp1;
+    }
+}
+
+//b / a = n, b % a = r
+void big_n_div_big_n(big_n a, big_n b, big_n n, big_n r)
+{
+    big_n tmp;
+    clear_big_n(tmp), clear_big_n(r), clear_big_n(n);
+    size_t i;
+    for(i = Big_n_Size - 1; i > 0; i--){
+        big_n_shl(r, 1);
+        big_n_add_int(r, b[i]);
+        if(big_n_compare_equal(a, r)){
+            uint16_t j = 0;
+            while(big_n_compare(a, r)){
+                big_n_add_big_n(a,tmp);
+                j++;
+            }
+            *(n + 1) = j - 1;
+            big_n_sub_big_n(a,tmp);//roll back once and subtract it from tmp to fetch the rest
+            big_n_sub_big_n(tmp, r);
+        }else{
+            *(n + 1) = 0;
+        }
     }
 }
 
@@ -171,12 +206,21 @@ bool big_n_compare(big_n a, big_n b)
 {
     size_t i;
     for(i = Big_n_Size - 1; i > 0; i++){
-        if(b[i] > a[i])
-            return TRUE;
-        if(b[i] < a[i])
-            return FALSE;
+        if(b[i] > a[i]) return TRUE;
+        if(b[i] < a[i]) return FALSE;
     }
     return FALSE;
+}
+
+//compare b>=a
+bool big_n_compare_equal(big_n a, big_n b)
+{
+    size_t i;
+    for(i = 0; i < Big_n_Size; i++){
+        if(b[i] > a[i]) return TRUE;
+        if(b[i] < a[i]) return FALSE;
+    }
+    return TRUE;
 }
 
 //a ?= 0
@@ -184,8 +228,7 @@ bool is_big_n_zero(big_n a)
 {
     size_t i;
     for(i = 0; i < Big_n_Size; i++){
-        if(a[i] != 0)
-            return FALSE;
+        if(a[i] != 0) return FALSE;
         return TRUE;
     }
 }
