@@ -6,7 +6,7 @@
 //note: the whole number is seperated into 256 segments, and they are stored reversely in an array
 //big_n a[0] represents 0 in base
 typedef uint8_t big_n[Big_n_Size];//big_n here is the whole array representing _Big_Number_(1024bits)
-big_n big_n_cache[Big_n_Base];//big_n_cache is each segment of the entire _Big_Number_
+big_n big_n_cache[Big_n_Base];//big_n_cache is
 
 //b = a + b
 void big_n_add_big_n(big_n a, big_n b)
@@ -143,6 +143,7 @@ void big_n_shl_bit(big_n a, size_t sh)
     if(sh == 0) return;
     big_n_shl(a, sh / Len_Cache);
     sh %= Len_Cache;
+    if(sh == 0) return;
     uint8_t tmp1 = 0, tmp2 = 0;
     uint16_t mask = Big_n_Base - (1 << (Len_Cache - sh));
     size_t i;
@@ -152,6 +153,12 @@ void big_n_shl_bit(big_n a, size_t sh)
         a[i] |= tmp2 >> (Len_Cache - sh);
         tmp2 = tmp1;
     }
+}
+
+//b % a = r
+void big_n_mod_big_n(big_n a, big_n b, big_n r)
+{
+    //TODO:not finished
 }
 
 //b / a = n, b % a = r
@@ -175,6 +182,23 @@ void big_n_div_big_n(big_n a, big_n b, big_n n, big_n r)
         }else{
             *(n + 1) = 0;
         }
+    }
+}
+
+//r = pow(a, k) mod n
+void big_n_pow_mod(big_n a, big_n k, big_n n, big_n r)
+{
+    big_n tmp;
+    clear_big_n(tmp);
+    big_n_one(r);
+    while (is_big_n_zero(k) == FALSE){
+        if (big_n_is_odd(k)){   //如果是奇数，那么手动模一个，变成偶数了就丢给后面移位处理
+            big_n_mul_big_n(r, a, tmp);
+            big_n_mod_big_n(n, tmp, r);
+        }
+        big_n_shr_bit(k, 1);
+        big_n_mul_big_n(a, a, tmp);
+        big_n_mod_big_n(n, tmp, r);
     }
 }
 
@@ -244,6 +268,15 @@ void big_n_rand(big_n a)
     }
 }
 
+//generate random big_n in required range b
+void big_n_rand_in_range(big_n a, big_n b)
+{
+    big_n tmp, n;
+    big_n_rand(a);
+    copy_big_n(tmp, a);
+    big_n_div_big_n(b, tmp, n, a);
+}
+
 //a = set_value
 void set_big_n(big_n a, size_t set_value)
 {
@@ -255,16 +288,32 @@ void set_big_n(big_n a, size_t set_value)
     }
 }
 
+//a = 1
+void big_n_one(big_n a)
+{
+    clear_big_n(a);
+    a[0] = 1;
+}
+
 //clear array
 void clear_big_n(big_n a)
 {
     memset(a, 0, Big_n_Size);
 }
 
-//copy
+//copy a = b
 void copy_big_n(big_n a, big_n b)
 {
     memcpy(a, b, Big_n_Size);
+}
+
+//print n
+void print_big_n(const big_n n) //TODO:this part is different
+{
+    size_t i;
+    for (i = Big_n_Size / 2 - 1; i > 0; i--){
+        printf("%x", n[i]);
+    }
 }
 
 

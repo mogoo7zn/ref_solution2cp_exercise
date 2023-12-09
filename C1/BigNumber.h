@@ -31,8 +31,12 @@ void big_n_mul_big_n(big_n a, big_n b, big_n p);
 void big_n_mul_int(big_n b, uint16_t a);
 void big_n_mod_int(big_n b, size_t a, size_t *r);
 void big_n_shr(big_n a, size_t sh);
-void big_n_shr_bit(big_n a, size_t sh);
 void big_n_shl(big_n a, size_t sh);
+void big_n_shr_bit(big_n a, size_t sh);
+void big_n_shl_bit(big_n a, size_t sh);
+void big_n_mod_big_n(big_n a, big_n b, big_n r);
+void big_n_div_big_n(big_n a, big_n b, big_n n, big_n r);
+void big_n_pow_mod(big_n a, big_n k, big_n n, big_n r);
 
 bool big_n_equal(big_n a, big_n b);
 bool big_n_is_even(big_n a);
@@ -43,6 +47,9 @@ bool is_big_n_zero(big_n a);
 
 
 void big_n_rand(big_n a);
+void big_n_rand_in_range(big_n a, big_n b);
 void set_big_n(big_n a, size_t set_value);
+void big_n_one(big_n a);
 void clear_big_n(big_n a);
 void copy_big_n(big_n a, big_n b);
+void print_big_n(const big_n n);
