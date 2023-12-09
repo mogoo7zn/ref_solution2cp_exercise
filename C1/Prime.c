@@ -8,7 +8,7 @@ bool is_prime(big_n n, size_t times)
 {
     if(big_n_is_even(n))
         return FALSE;
-    big_n const judge, n_1;    //judge = (big_n)1
+    big_n judge, n_1;    //judge = (big_n)1
     big_n_one(judge);
     copy_big_n(n_1, n);
     big_n_sub_int(n_1, 1);  //n_1 = n - 1
@@ -62,7 +62,7 @@ bool is_prime(big_n n, size_t times)
     return TRUE;
 }
 
-void generate_prime(int num_bits, uint8_t num[])
+void generate_prime(int num_bits)
 {
     uint16_t prime_table[Prime_Table_Cnt] = {2, 3, 5, 7, 11, 13, 17, 19,
                                 23, 29, 31, 37, 41, 43, 47,
@@ -77,7 +77,7 @@ void generate_prime(int num_bits, uint8_t num[])
     size_t ncheck_n;    //number of checked n
     bool isPrime = TRUE;
     size_t mod_table[Mod_Table_Size];
-    size_t i, p;
+    size_t i;
     bool _flag = 1;
 
     double used_time;
@@ -106,14 +106,14 @@ void generate_prime(int num_bits, uint8_t num[])
                         break;
                     }
                 }
-//                TODO:this part is different, check whether it is correct
-                while (isPrime ==  FALSE){
+//                TODO:this part cannot operate correctly
+                while (isPrime == FALSE){
                     short flag = 1;
                     big_n_add_int(n, 2);
                     for (i = 0; i < Prime_Table_Cnt; i++){
                         mod_table[i] += 2;
-                        if (mod_table[i] >= p)
-                            mod_table[i] -= p;
+                        if (mod_table[i] >= prime_table[i])
+                            mod_table[i] -= prime_table[i];
                         if (mod_table[i] == 0)
                             flag = 0;
                     }

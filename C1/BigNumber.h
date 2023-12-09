@@ -21,7 +21,7 @@
 #endif //C1_BIGNUMBER_H
 
 typedef uint8_t big_n[Big_n_Size];//big_n here is the whole array representing _Big_Number_(1024bits)
-big_n big_n_segment[Big_n_Base];//big_n_cache is each segment of the entire _Big_Number_
+extern big_n big_n_segment[Big_n_Base];//big_n_cache is each segment of the entire _Big_Number_
 
 void big_n_add_big_n(big_n a, big_n b);
 void big_n_add_int(big_n b, uint16_t a);

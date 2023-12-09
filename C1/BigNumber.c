@@ -129,12 +129,22 @@ void big_n_shl(big_n a, size_t sh)
     }
 }
 
-//a>>sh TODO:this part is not finished
+//a>>sh
 void big_n_shr_bit(big_n a, size_t sh)
 {
-    if(sh == 0)
-        return;
-
+    if(sh == 0) return;
+    big_n_shr(a, sh / Len_Cache);
+    sh %= Len_Cache;
+    if (sh == 0) return;
+    uint8_t tmp1 = 0, tmp2 = 0;
+    uint8_t mask = (1 << sh) - 1;
+    size_t i;
+    for (i = Big_n_Size - 1; i > 0; i--){
+        tmp1 = a[i] & mask;
+        a[i] >>= sh;
+        a[i] |= tmp2 << (Len_Cache - sh);
+        tmp2 = tmp1;
+    }
 }
 
 //a<<sh
@@ -145,7 +155,7 @@ void big_n_shl_bit(big_n a, size_t sh)
     sh %= Len_Cache;
     if(sh == 0) return;
     uint8_t tmp1 = 0, tmp2 = 0;
-    uint16_t mask = Big_n_Base - (1 << (Len_Cache - sh));
+    uint8_t mask = Big_n_Base - (1 << (Len_Cache - sh));
     size_t i;
     for(i = 0; i < Big_n_Size; i++){
         tmp1 = mask & a[i];
