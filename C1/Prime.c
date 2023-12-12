@@ -6,12 +6,14 @@
 //Miller-Rabin primality test
 bool is_prime(big_n n, size_t times)
 {
+//    TODO:here is where bugs start!!
     if(big_n_is_even(n))
         return FALSE;
-    big_n judge, n_1;    //judge = (big_n)1
+    big_n judge, n_1, _1_;    //judge = (big_n)1
+    big_n_one(_1_);
     big_n_one(judge);
     copy_big_n(n_1, n);
-    big_n_sub_int(n_1, 1);  //n_1 = n - 1
+    big_n_sub_big_n(_1_, n_1);  //n_1 = n - 1
 
     size_t k = 0;
     big_n n_1_copy;
@@ -31,13 +33,15 @@ bool is_prime(big_n n, size_t times)
         big_n_div_big_n(tmp, n_1_copy, q, r);
     }
 
+//    TODO:this part is wrong!!
     size_t i;
     for (i = 0; i < times; i++){
         big_n a;    //the same a in ppt
         {
-            big_n sup;
+            big_n sup, _2_;
+            set_big_n(_2_, 2);
             copy_big_n(sup, n);
-            big_n_sub_int(sup, 2);
+            big_n_sub_big_n(sup, _2_);
             big_n_rand_in_range(a, sup);
         }
         big_n r;
@@ -64,9 +68,13 @@ bool is_prime(big_n n, size_t times)
 
 void generate_prime(int num_bits)
 {
-    uint16_t prime_table[Prime_Table_Cnt] = {2, 3, 5, 7, 11, 13, 17, 19,
-                                23, 29, 31, 37, 41, 43, 47,
-                                53, 59, 61, 67, 71};
+    uint16_t prime_table[Prime_Table_Cnt] = {3, 5, 7, 11, 13, 17, 19,23, 29,
+                                             31, 37, 41, 43, 47,53, 59, 61,
+                                             67, 71, 73, 79, 83, 89, 97, 101,
+                                             103, 107, 109, 113, 127, 131 ,137,
+                                             139, 149, 151, 157, 163, 167, 173,
+                                             179, 181, 191, 193, 197, 199, 211,
+                                             223, 227, 229, 233};
 /* inf is the left limit of generated big_n, while sup is the opposite case
  * judge is one expressed in big_n form and n is the big_n that need to be tested*/
     big_n inf, sup, judge, n;
@@ -81,8 +89,7 @@ void generate_prime(int num_bits)
     bool _flag = 1;
 
     double used_time;
-    time_t time;
-    srand(time);
+    srand(time(0));
     clock_t start ,end;
     start = clock();
 

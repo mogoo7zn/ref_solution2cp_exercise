@@ -4,10 +4,9 @@
 
 #ifndef C1_PRIME_H
 #define C1_PRIME_H
-#define Prime_Table_Cnt 20
+#define Prime_Table_Cnt 50
 #define Mod_Table_Size 100
 #define Test_Times 10
-#endif //C1_PRIME_H
 
 #include "BigNumber.h"
 #include <stdio.h>
@@ -16,3 +15,4 @@
 
 bool is_prime(big_n n, size_t times);
 void generate_prime(int num_bits);
+#endif //C1_PRIME_H

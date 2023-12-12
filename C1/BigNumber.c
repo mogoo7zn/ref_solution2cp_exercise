@@ -6,10 +6,9 @@
 //note: the whole number is seperated into 256 segments, and they are stored reversely in an array
 //big_n a[0] represents 0 in base
 typedef uint8_t big_n[Big_n_Size];//big_n here is the whole array representing _Big_Number_(1024bits)
-big_n big_n_cache[Big_n_Base];//big_n_cache is
 
 //b = a + b
-void big_n_add_big_n(big_n a, big_n b)
+void big_n_add_big_n(const big_n a, big_n b)
 {
     uint16_t sum = 0, i;
     for(i = 0; i < Big_n_Size; i++){
@@ -19,15 +18,17 @@ void big_n_add_big_n(big_n a, big_n b)
     }
 }
 
-//b = b + int
-void big_n_add_int(big_n b, uint16_t a)
+//b = b + int (note:all int is implemented as uint)
+void big_n_add_int(big_n b, uint8_t a)
 {
 //    TODO:this part is different
     size_t i;
+    uint16_t a_copy = a;
     for(i = 0; i < Big_n_Size; i++){
-        b[i] = (a + b[i]) % Big_n_Base;
-        a /= Big_n_Base;
-        if (a == 0)
+        a_copy += (uint16_t) b[i];
+        b[i] = a_copy % Big_n_Base;
+        a_copy /= Big_n_Base;
+        if (a_copy== 0)
             break;
     }
 }
@@ -109,7 +110,7 @@ void big_n_shr(big_n a, size_t sh)
     for(i = 0; i < Big_n_Size; i++){
         a[i] = a[i + sh];
     }
-    for (int i = 0; i < sh; i++) {
+    for (i = 0; i < sh; i++) {
         a[Big_n_Size - 1 - i] = 0;
     }
 }
@@ -132,7 +133,7 @@ void big_n_shl(big_n a, size_t sh)
 //a>>sh
 void big_n_shr_bit(big_n a, size_t sh)
 {
-    if(sh == 0) return;
+    if (sh == 0) return;
     big_n_shr(a, sh / Len_Cache);
     sh %= Len_Cache;
     if (sh == 0) return;
@@ -166,31 +167,81 @@ void big_n_shl_bit(big_n a, size_t sh)
 }
 
 //b % a = r
+//TODO:not completely understand
 void big_n_mod_big_n(big_n a, big_n b, big_n r)
 {
-    //TODO:not finished
+    big_n big_n_cache[Big_n_Base + 1];//big_n_cache is the table to save the sequent mod of i*b mod a
+    if (big_n_compare(b, a)){
+        copy_big_n(r, b);
+        return;
+    }
+    clear_big_n(r);
+    big_n tmp, a_copy;
+    copy_big_n(a_copy, a);
+
+//    fill in big_n_cache
+    size_t i;
+    if (big_n_equal(a, a_copy) == FALSE){   //this line??
+        clear_big_n(tmp);
+        for (i = 0; i < Big_n_Base; i++){
+            copy_big_n(big_n_cache[i], tmp);
+            big_n_add_big_n(a,tmp);
+        }
+        copy_big_n(a_copy, a);
+    }
+
+//    use elements from the table to peel off the integral multiples of a in b
+    for (i = Big_n_Size - 1; i > 0; i--){
+        big_n_shl(r, 1);
+        big_n_add_int(r, b[i]);
+        if (big_n_compare_equal(a, r)){
+            if (big_n_compare_equal(big_n_cache[Big_n_Base - 1], r)) {
+                big_n_sub_big_n(big_n_cache[Big_n_Base - 1], r);
+            } else {
+//                binary search for suitable element in big_n_cache
+                uint_fast32_t low = 0, high = Big_n_Base;
+                while (high != low + 1){
+                    size_t m = (low + high) / 2;
+                    if (big_n_compare_equal(big_n_cache[m] ,r)){
+                        low = m;
+                    } else{
+                        high = m;
+                    }
+                }
+                big_n_sub_big_n(big_n_cache[low], r);
+            }
+        }
+    }
 }
 
-//b / a = n, b % a = r
-void big_n_div_big_n(big_n a, big_n b, big_n n, big_n r)
+//b / a = q, b % a = r
+void big_n_div_big_n(big_n a, big_n b, big_n q, big_n r)
 {
     big_n tmp;
-    clear_big_n(tmp), clear_big_n(r), clear_big_n(n);
+    clear_big_n(tmp);
+    clear_big_n(r);
+    clear_big_n(q);
     size_t i;
     for(i = Big_n_Size - 1; i > 0; i--){
         big_n_shl(r, 1);
         big_n_add_int(r, b[i]);
         if(big_n_compare_equal(a, r)){
             uint16_t j = 0;
-            while(big_n_compare(a, r)){
-                big_n_add_big_n(a,tmp);
+            clear_big_n(tmp);
+//            while(big_n_compare(a, r)){
+//                big_n_add_big_n(a,tmp);
+//                j++;
+//            }
+//TODO:can I rewrite stuff above?
+            do {
                 j++;
-            }
-            *(n + 1) = j - 1;
+                big_n_add_big_n(a, tmp);
+            } while (big_n_compare_equal(tmp, r));
+            q[i] = j - 1;
             big_n_sub_big_n(a,tmp);//roll back once and subtract it from tmp to fetch the rest
             big_n_sub_big_n(tmp, r);
         }else{
-            *(n + 1) = 0;
+            q[i] = 0;
         }
     }
 }
@@ -322,7 +373,7 @@ void print_big_n(const big_n n) //TODO:this part is different
 {
     size_t i;
     for (i = Big_n_Size / 2 - 1; i > 0; i--){
-        printf("%x", n[i]);
+        printf("%d", n[i]);
     }
 }
 
