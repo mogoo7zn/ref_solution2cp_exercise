@@ -9,51 +9,49 @@
 //葫芦 full house（3张牌等级相同，另2张牌也等级相同）
 //同花 flush（5张牌花色相同）
 //顺子 straight（5张牌等级顺序相连）
-//三张 three of a kind（ 3张牌等级相同）
+//三张 three of a kind（3张牌等级相同）
 //两对 two pairs（存在两个对子）
 //对子 pair（2张牌等级相同）
 //其他
 
 
 #include <stdio.h>
-#include <stdlib.h>
-#define NUMBER 5
-#define T 10
-#define LENGTH 15
 #define MAX_LENGTH 1500
 #define TypeLen 4
-#define NumLen 10
+#define NumLen 13
 //#define DIAMONDS D
 //#define CLUBS C
 //#define HEARTS H
 //#define SPADES S
 
-int islegal(char *cursor);
-int straight_flush(char *input_cards);
-int four_of_a_kind(char *input_cards);
-int full_house(char *input_cards);
-int flush(char *input_cards);
-int straight(char *input_cards);
-int three_of_a_kind(char *input_cards);
-int two_pairs(char *input_cards);
-int pair(char *input_cards);
-void bubbleSort(char *value, int left, int right);
-void swap(char *a, char *b);
+void clear(void);
+int islegal(const char *cursor);
+void sort_num(void);
+int straight_flush();
+int four_of_a_kind();
+int full_house();
+int flush();
+int straight();
+int three_of_a_kind();
+int two_pairs();
+int pair();
+void swap(int *a, int *b);
+void bubbleSort(int *value, int left, int right);
 
-
-char buffer_all[MAX_LENGTH] = "D2 24 HA SJ CK SJ 0";
-char judge_type[4] = {'D', 'C', 'H', 'S'};
-char judge_num[10] = {'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T'};
+char buffer_all[MAX_LENGTH] = "DK HQ SJ DA ST 0";
+char judge_type[TypeLen] = {'D', 'C', 'H', 'S'};
+char judge_num[NumLen] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
 char type[5];
 char num[5];
+int int_num[5];
 int main(void)
 {
-    char *cursor = buffer_all, *current = buffer_all;
-    int i = 0;
+    char *cursor = buffer_all;
+    int i;
     while(islegal(cursor) != -1){
-        while(1){
-            if (i == 4)
-                break;
+        clear();
+        i = 0;
+        while(i < 5){
             if (islegal(cursor)){
                 type[i] = *cursor;
                 num[i] = *(cursor + 1);
@@ -61,134 +59,257 @@ int main(void)
             }
             cursor += 3;
         }
+        sort_num();
+        if (straight_flush()){
+            printf("straight flush\n");
+        }else if(four_of_a_kind()){
+            printf("four of a kind\n");
+        }else if (full_house()) {
+            printf("full house\n");
+        }else if (flush()){
+            printf("flush\n");
+        }else if (straight()){
+            printf("straight\n");
+        }else if (three_of_a_kind()){
+            printf("three of a kind\n");
+        }else if (two_pairs()){
+            printf("two pairs\n");
+        }else if (pair()){
+            printf("pair\n");
+        }else
+        printf("others\n");
+
     }
 
     return 0;
 }
 
-int islegal(char *cursor)
+void clear(void)
+{
+    int i;
+    for (i = 0; i < 5; i++){
+        type[i] = '0';
+        num[i] = '0';
+    }
+}
+int islegal(const char *cursor)
 {
     if (*cursor == '0'){
         return -1;
     }
     int i = 0, flag1 = 0, flag2 = 0;
     while(i < TypeLen){
-        i++;
         if (*cursor == judge_type[i]) {
             flag1 = 1;
             break;
         }
+        i++;
     }
     i = 0;
     while(i < NumLen){
-        i++;
         if (*(cursor + 1) == judge_num[i]) {
             flag2 = 1;
             break;
         }
+        i++;
     }
     i = 0;
     if (!(flag1 && flag2)){
         return 0;
     }
     while (i < 5){
-        i++;
         if (*cursor == type[i] && *(cursor + 1) == num[i])
+            return 0;
+        i++;
+    }
+    return 1;
+}
+
+int straight_flush()
+{
+    int i;
+    for(i = 0; i < TypeLen - 1; i++){
+        if(type[i] != type[i + 1]) return 0;
+    }
+    for(i = 0; i < 4; i++){
+        if(int_num[i] == int_num[i + 1]) return 0;
+    }
+    if(int_num[4] == 14){
+        int int_num_copy[5];
+        int j;
+        for (j = 0; j < 5; j++){
+            int_num_copy[j] = int_num[j];
+        }
+        for (j = 4; j > 1; j--){
+            int_num_copy[j] = int_num_copy[j - 1];
+        }
+        int_num_copy[0] = 1;j = 0;
+        while (j < 4 && int_num_copy[j] + 1 == int_num_copy[j + 1]){
+            j++;
+        }
+        if(j == 4)
+            return 1;
+    }else{
+        for (i = 0; i < 4; i++){
+            if(int_num[i] + 1 != int_num[i + 1])
+                return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+int four_of_a_kind()
+{
+    if ((int_num[0] == int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    return 0;
+}
+
+int full_house()
+{
+    if ((int_num[0] == int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    if ((int_num[0] == int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    return 0;
+}
+
+int flush()
+{
+    int i;
+    for (i = 0; i < 4; i++){
+        if(type[i] != type[i + 1])
             return 0;
     }
     return 1;
 }
-//initialize input_cards in incremental sequence
-void init_cards(char *input_cards, char *ch, char *number)
-{
-    int i, j;
-    for(i = 0, j = 0; i < LENGTH; i += 3, j++)
-    {
-        ch[j] = input_cards[i];
-    }
-    for(i = 1, j = 0; i < LENGTH; i += 3, j++)
-    {
-        number[j] = input_cards[i];
-    }
-    bubbleSort(ch, 0, 4);
-    bubbleSort(number, 0, 4);
-}
 
-int straight_flush(char *input_cards)
+int straight()
 {
-    int judge = 0, i, j;
-    char ch[5], number[5];
-    init_cards(input_cards, ch, number);
-
-    for(i = 4; i > 0; i--){
-        if(ch[i] > ch[i - 1]) return judge;
-    }
-    for(i = 4; i > 0; i--){
-        if(number[i] != number[i - 1] + 1) return judge;
-    }
-    return judge = 1;
-}
-
-int four_of_a_kind(char *input_cards)
-{
-    int judge = 0;
     int i;
-    for(i = 0; i < LENGTH - 3; i += 3){
-        if(input_cards[i] != input_cards[i + 3]) return judge;
+    for(i = 0; i < 4; i++){
+        if(int_num[i] == int_num[i + 1]) return 0;
     }
-    return judge = 1;
+    if(int_num[4] == 14){
+        int int_num_copy[5];
+        int j;
+        for (j = 0; j < 5; j++){
+            int_num_copy[j] = int_num[j];
+        }
+        for (j = 4; j > 0; j--){
+            int_num_copy[j] = int_num_copy[j - 1];
+        }
+        int_num_copy[0] = 1;j = 0;
+        while (j < 4 && int_num_copy[j] + 1 == int_num_copy[j + 1]){
+            j++;
+        }
+        if (j == 4) {
+            return 1;
+        }
+    }
+    for (i = 0; i < 4; i++){
+        if(int_num[i] + 1 != int_num[i + 1])
+            return 0;
+    }
+    return 1;
 }
 
-int full_house(char *input_cards)
+int three_of_a_kind()
 {
-    int judge = 0;
-
-    return judge;
+    if ((int_num[0] == int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    return 0;
 }
 
-int flush(char *input_cards)
+
+int two_pairs()
 {
-    int judge = 0;
-
-    return judge;
+    if ((int_num[0] == int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] == int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    return 0;
 }
 
-int straight(char *input_cards)
+int pair()
 {
-    int judge = 0;
-
-    return judge;
+    if ((int_num[0] == int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] == int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] == int_num[3]) && (int_num[3] != int_num[4]))
+        return 1;
+    if ((int_num[0] != int_num[1]) && (int_num[1] != int_num[2]) && (int_num[2] != int_num[3]) && (int_num[3] == int_num[4]))
+        return 1;
+    return 0;
 }
 
-int three_of_a_kind(char *input_cards)
+void sort_num(void)
 {
-    int judge = 0;
-
-    return judge;
+    int i;
+    for (i = 0; i < 5; ++i) {
+        switch (num[i]) {
+            case '2':
+                int_num[i] = 2;
+                break;
+            case '3':
+                int_num[i] = 3;
+                break;
+            case '4':
+                int_num[i] = 4;
+                break;
+            case '5':
+                int_num[i] = 5;
+                break;
+            case '6':
+                int_num[i] = 6;
+                break;
+            case '7':
+                int_num[i] = 7;
+                break;
+            case '8':
+                int_num[i] = 8;
+                break;
+            case '9':
+                int_num[i] = 9;
+                break;
+            case 'T':
+                int_num[i] = 10;
+                break;
+            case 'J':
+                int_num[i] = 11;
+                break;
+            case 'Q':
+                int_num[i] = 12;
+                break;
+            case 'K':
+                int_num[i] = 13;
+                break;
+            case 'A':
+                int_num[i] = 14;
+                break;
+        }
+    }
+    bubbleSort(int_num, 0, 5);
 }
 
-int two_pairs(char *input_cards)
-{
-    int judge = 0;
-
-    return judge;
-}
-
-int pair(char *input_cards)
-{
-    int judge = 0;
-
-    return judge;
-}
-
-void swap(char *a, char *b)
+void swap(int *a, int *b)
 {
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void bubbleSort(char *value, int left, int right)
+void bubbleSort(int *value, int left, int right)
 {
     int i, j;
     for(i = left; i < right; i++)
@@ -202,7 +323,15 @@ void bubbleSort(char *value, int left, int right)
 }
 
 
-
+//    int i, j;
+//    for(i = 0, j = 0; i < LENGTH; i += 3, j++)
+//    {
+//        ch[j] = input_cards[i];
+//    }
+//    for(i = 1, j = 0; i < LENGTH; i += 3, j++)
+//    {
+//        number[j] = input_cards[i];
+//    }
 
 //store input card types
 //        gets_s(input_cards, 15);
