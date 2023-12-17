@@ -54,6 +54,10 @@ char src_filename[] = "D:/A18-SRC.TXT";
 char out_filename[] = "D:/A18-OUT.BIN";
 char recover_filename[] = "D:/A18-REC.TXT";
 
+/*
+ * Not finished, A18-2 may not work
+ * Consider input "a\nb\n", there're conflicts when doing recover decoding
+ */
 int main() {
 
     compress();
@@ -79,20 +83,20 @@ int uncompress() {
         if (0 == block_len) {
             break;
         }
-        int done_bin_chars = decoding(block_buff, decode_cursor, block_len);
-        if (done_bin_chars != -1) {
+        int done_rec_chars = decoding(block_buff, decode_cursor, block_len);
+        if (done_rec_chars > 0) {
             if (NULL == fp_rec) {
                 char *rtn = strchr(decode_buff, '\n');
                 if (NULL == rtn) {
-                    decode_cursor += done_bin_chars;
+                    decode_cursor += done_rec_chars;
                 } else {
                     *rtn++ = '\0';
 #ifdef DEBUG
-                    printf ("Got recovery file name %\n", decode_buff);
+                    printf ("Got recovery file name %s\n", decode_buff);
 #endif
                     fp_rec = fopen(decode_buff, "w");
                     if (NULL == fp_rec) {
-                        printf ("Fail to open recovery file %\n", decode_buff);
+                        printf ("Fail to open recovery file %s\n", decode_buff);
                         fclose(fp_bin);
                         exit(1);
                     }
@@ -116,35 +120,54 @@ int uncompress() {
 
 int decoding(unsigned char *block, char *decode, int block_len) {
     static unsigned char rec_char = 0;
-    static int done_bits = 0;
+    static int rec_done_bits = 0;
     static int repeated_times = 0;
     static int action = DECODING_LENGTH;
-    int i;
+    int rec_chars_cnt = 0;
+    int i, j;
 
     for (i = 0; i < block_len; i++) {
         int ch = block[i];
         if (DECODING_LENGTH == action) {
-            if (0 == done_bits) {
+            if (0 == rec_done_bits) {
                 repeated_times = ch >> (BITS_PER_CHAR - BITS_PER_REPEATED);
                 repeated_times++;
                 rec_char = (ch << BITS_PER_REPEATED) & 0XFF;
                 action = DECODING_CHARS;
-                done_bits = BITS_PER_CHAR - BITS_PER_REPEATED;
-            } else if (done_bits < 3) {
-                repeated_times = rec_char | (ch >> (BITS_PER_CHAR - (BITS_PER_REPEATED - done_bits)));
+                rec_done_bits = BITS_PER_CHAR - BITS_PER_REPEATED;
+            } else if (rec_done_bits < 3) {
+                repeated_times = rec_char | (ch >> (BITS_PER_CHAR - (BITS_PER_REPEATED - rec_done_bits)));
                 repeated_times++;
-                rec_char = (ch << (BITS_PER_REPEATED - done_bits)) & 0XFF;
-                done_bits = BITS_PER_CHAR - (BITS_PER_REPEATED - done_bits);
+                rec_char = (ch << (BITS_PER_REPEATED - rec_done_bits)) & 0XFF;
+                rec_done_bits = BITS_PER_CHAR - (BITS_PER_REPEATED - rec_done_bits);
             } else {
-                printf ("Unexpected error! done_bits = %d\n", done_bits);
+                printf ("Unexpected error in DECODING_LENGTH! rec_done_bits = %d\n", rec_done_bits);
             }
         } else if (DECODING_CHARS == action) {
-
+            if (0 == rec_done_bits) {
+                rec_char = ch;
+                for (j = 0; j < repeated_times; j++) {
+                    *decode++ = rec_char;
+                    rec_chars_cnt++;
+                }
+                action = DECODING_LENGTH;
+                repeated_times = 0;
+            } else if (rec_done_bits < BITS_PER_CHAR && rec_done_bits > 0) {
+                rec_char |= (ch >> rec_done_bits) & 0XFF;
+                for (j = 0; j < repeated_times; j++) {
+                    *decode++ = rec_char;
+                    rec_chars_cnt++;
+                }
+                action = DECODING_LENGTH;
+                rec_done_bits = BITS_PER_CHAR - rec_done_bits;
+                repeated_times = 0;
+            } else {
+                printf ("Unexpected error in DECODING_CHARS! rec_done_bits = %d\n", rec_done_bits);
+            }
         }
-
     }
 
-    return bin_chars_cnt;
+    return rec_chars_cnt;
 }
 
 int compress(void) {

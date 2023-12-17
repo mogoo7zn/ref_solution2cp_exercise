@@ -16,58 +16,89 @@
 #include <stdlib.h>
 #include <string.h>
 
+//#define DEBUG
+
 #define MAX_CHARS_PER_LINE 2048
 #define MAX_REPEATED_TIMES 8
 #define SINGLE_SEQUENCE 1
 #define REPEATED_SEQUENCE 2
+
+#define DECODING_LENGTH 1
+#define DECODING_CHARS 2
 
 #define true (1 == 1)
 #define false (!true)
 typedef int bool;
 
 // Read text file per line, encode and write to target file
-int compress(void);
+int compress(char *, char *);
 
 // Read compressed file per line, decode and write to file
-int uncompress(void);
+int uncompress(char *);
 
 // Functions: encoding, bit operations, decoding
 int encoding(char *, char *);
 void output_bits(char *, unsigned char *);
-int decoding(char *, char *);
+int decoding(unsigned char *, char *);
 
-char src_filename[] = "D:/A18-SRC.TXT";
-char out_filename[] = "D:/A18-OUT.TXT";
-char recover_filename[] = "D:/A18-REC.TXT\n";
+void print_string_binary(unsigned char *);
+void print_usage(void);
 
-int main() {
 
-    compress();
-    uncompress();
+int main(int argc, char **argv) {
+    char src_filename[] = "D:/A18-SRC.TXT";
+    char out_filename[] = "D:/A18-OUT.BIN";
+
+    print_usage();
+
+    switch (argc) {
+        case 1:
+            compress(src_filename, out_filename);
+            uncompress(out_filename);
+            break;
+
+        case 3:
+            uncompress(argv[1]);
+            break;
+
+        case 4:
+            compress(argv[1], argv[2]);
+            break;
+
+        default:
+            print_usage();
+            break;
+    }
 
     return 0;
 }
 
-int compress(void) {
-    char input_buff[MAX_CHARS_PER_LINE]; // "aaa******dd???????????aaa!$$aaa!@#$$"; // sample line for test
-    char encode_buff[MAX_CHARS_PER_LINE]; // sample encode "3a6*2d8?3?3a1!12$3a1!@#12$"
-    unsigned char output_buff[MAX_CHARS_PER_LINE]; // "010 0110 0001 101 0010 1010 001 0110 0100" for "3a6*2d"
+int compress(char *src_filename, char *out_filename) {
+    char input_buff[MAX_CHARS_PER_LINE];
+    char encode_buff[MAX_CHARS_PER_LINE];
+    unsigned char output_buff[MAX_CHARS_PER_LINE];
     char *input_cursor;
     int i;
 
     // Open source file for reading
-    FILE *fpSrc = fopen(src_filename, "r");
+    FILE *fp_src = fopen(src_filename, "r");
+    if (NULL == fp_src) {
+        printf("Fail to open source text file %s.\n", src_filename);
+        exit(1);
+    }
 
     // Open target file for writing
-    FILE *fpOut = fopen(out_filename, "w");
-
-    if (NULL == fpSrc || NULL == fpOut) {
-        printf("Open source text or output file (D:/A18-SRC.TXT)failed.\n");
+    FILE *fp_out = fopen(out_filename, "wb");
+    if (NULL == fp_out) {
+        printf("Fail to open binary output file %s.\n", out_filename);
         exit(1);
     }
 
     // While loop: fgets read a line from source to input buffer until EOF
-    strcpy(input_buff, recover_filename);
+    strcpy(input_buff, src_filename);
+    strcat(input_buff, ".REC\n");
+
+    // Write line break as '\0' instead as '\n' occurs in compressed output
     do {
         bool ends_with_rtn = false;
         // Remove ending '\n'
@@ -78,13 +109,15 @@ int compress(void) {
 
         // Empty line
         if (strlen(input_buff) == 0) {
-            fputs("\n", fpOut);
+            if (ends_with_rtn = true) {
+                fwrite("\0", sizeof(unsigned char), 1, fp_out);
+            }
             continue;
         }
-
+#ifdef DEBUG
         // Print to screen for debug purpose
         printf("Input Text: %s\n", input_buff);
-
+#endif
         // Clear encode_buff & output_buff
         memset(encode_buff, '\0', MAX_CHARS_PER_LINE);
         memset(output_buff, '\0', MAX_CHARS_PER_LINE);
@@ -93,53 +126,34 @@ int compress(void) {
         while (input_cursor < input_buff + strlen(input_buff)) {
             input_cursor += encoding(input_cursor, encode_buff + strlen(encode_buff));
         }
+        output_bits(encode_buff, output_buff);
 
+#ifdef DEBUG
         // Print to screen for debug purpose
-        printf("Encode Text: %s\n", encode_buff);
         printf("Encode HEX: ");
         for (i = 0; i < strlen(encode_buff); i++) {
-            char str[2 + 1];
-            sprintf(str, "%.2x", encode_buff[i]);
-            printf("%s ", str);
+            printf("%.2x ", encode_buff[i]);
         }
         printf("\n");
 
-        output_bits(encode_buff, output_buff);
-        // Print to screen for debug purpose
-        printf("Output Text: %s\n", output_buff);
-
         printf("Output HEX: ");
         for (i = 0; i < strlen(output_buff); i++) {
-            char str[2 + 1];
-            sprintf(str, "%.2x", output_buff[i]);
-            printf("%s ", str);
+            printf("%.2x ", output_buff[i]);
         }
         printf("\n");
 
         printf("Output Binary: ");
-        for (i = 0; i < strlen(output_buff); i++) {
-            char str[8 + 1];
-            int j;
-            itoa(output_buff[i], str, 2);
-            for (j = 0; j < 8 - strlen(str); j++) {
-                printf("%c", '0');
-            }
-            printf("%s ", str);
-            if ((i + 1) % 7 == 0) {
-                printf("\n");
-            }
-        }
-        printf("\n");
-
+        print_string_binary(output_buff);
+#endif
         // Write a line to target file
-        fputs(output_buff, fpOut);
+        fwrite(output_buff, sizeof(unsigned char), strlen(output_buff), fp_out);
         if (true == ends_with_rtn) {
-            fputs("\n", fpOut);
+            fwrite("\0", sizeof(unsigned char), 1, fp_out);
         }
-    } while (fgets(input_buff, MAX_CHARS_PER_LINE, fpSrc) != NULL);
+    } while (fgets(input_buff, MAX_CHARS_PER_LINE, fp_src) != NULL);
 
-    fclose(fpSrc);
-    fclose(fpOut);
+    fclose(fp_src);
+    fclose(fp_out);
 
     return 0;
 }
@@ -235,6 +249,195 @@ void output_bits(char *encode, unsigned char *output) {
     }
 }
 
-int uncompress() {
+int uncompress(char *out_filename) {
+    unsigned char output_buff[MAX_CHARS_PER_LINE] = {0};
+    char decode_buff[MAX_CHARS_PER_LINE] = {0};
+
+    FILE *fp_out = fopen(out_filename, "rb");
+    if (NULL == fp_out) {
+        printf("Open compressed file %s failed.\n", out_filename);
+        exit(1);
+    }
+
+    FILE *fp_rec = NULL;
+    long outfile_offset = 0;
+    while (true) {
+        bool ends_with_rtn = false;
+        bool is_eof = false;
+
+        int i = 0;
+        while (true) {
+            int ch = fgetc(fp_out);
+            if (0 == ch) {
+                ends_with_rtn = true;
+                break;
+            }
+            if (EOF == ch) {
+                is_eof = true;
+                break;
+            }
+            output_buff[i++] = ch;
+        }
+
+        // Empty line
+        if (strlen(output_buff) == 0) {
+            if (true == ends_with_rtn) {
+                fputs("\n", fp_rec);
+            }
+            if (true == is_eof) {
+                break;
+            }
+            memset(output_buff, '\0', MAX_CHARS_PER_LINE);
+            continue;
+        }
+
+        decoding(output_buff, decode_buff);
+        if (NULL == fp_rec) {
+#ifdef DEBUG
+            printf ("Got recovery file name %s\n", decode_buff);
+#endif
+            fp_rec = fopen(decode_buff, "w");
+            if (NULL == fp_rec) {
+                printf ("Fail to open recovery file %s\n", decode_buff);
+                fclose(fp_out);
+                exit(1);
+            }
+            memset(output_buff, '\0', MAX_CHARS_PER_LINE);
+            memset(decode_buff, '\0', MAX_CHARS_PER_LINE);
+            continue;
+        }
+        fputs(decode_buff, fp_rec);
+        fputs("\n", fp_rec);
+        memset(output_buff, '\0', MAX_CHARS_PER_LINE);
+        memset(decode_buff, '\0', MAX_CHARS_PER_LINE);
+
+        if (true == is_eof) {
+            break;
+        }
+    }
+
+    fclose(fp_out);
+    if (fp_rec != NULL) {
+        fclose(fp_rec);
+    }
+
     return 0;
+}
+
+int decoding(unsigned char *output, char *decode) {
+    unsigned char rec_char = 0;
+    int rec_done_bits = 0;
+    int out_done_bits = 0;
+    int repeated_times = 0;
+    int action = DECODING_LENGTH;
+    int len = strlen(output);
+    unsigned char *cursor = output;
+    int i;
+
+    while (cursor < (output + len)) {
+        int ch = *cursor;
+        if (DECODING_LENGTH == action) {
+            if ((8 - out_done_bits) >= (3 - rec_done_bits)) {
+                ch = (ch << out_done_bits) & 0XFF;
+                ch >>= out_done_bits;
+                ch >>= 8 - out_done_bits - (3 - rec_done_bits);
+                ch = rec_char | (ch & 0XFF);
+                ch++;
+
+                if (1 == repeated_times) {
+                    if (1 == ch) { // End of single sequence
+                        repeated_times = 0;
+                        out_done_bits += 3 - rec_done_bits;
+                        rec_char = 0;
+                        rec_done_bits = 0;
+                    } else {
+                        action = DECODING_CHARS;
+                    }
+                    continue;
+                }
+
+                repeated_times = ch;
+                action = DECODING_CHARS;
+
+                if ((8 - out_done_bits) == (3 - rec_done_bits)) {
+                    cursor++;
+                }
+
+                out_done_bits += 3 - rec_done_bits;
+                out_done_bits %= 8;
+                rec_char = 0;
+                rec_done_bits = 0;
+            } else { //(8 - out_done_bits) < (3 - rec_done_bits)
+                ch = (ch << out_done_bits) & 0XFF;
+                ch >>= out_done_bits;
+                ch <<= (3 - rec_done_bits) - (8 - out_done_bits);
+                rec_char |= ch & 0XFF;
+                rec_done_bits += 8 - out_done_bits;
+                out_done_bits = 0;
+                cursor++;
+            }
+        } else if (DECODING_CHARS == action) {
+            if ((8 - out_done_bits) >= (8 - rec_done_bits)) {
+                ch = (ch << out_done_bits) & 0XFF;
+                ch >>= out_done_bits + rec_done_bits;
+                rec_char |= ch & 0XFF;
+
+                for (i = 0; i < repeated_times; i++) {
+                    *decode++ = rec_char;
+                }
+
+                action = DECODING_LENGTH;
+                if ((8 - out_done_bits) == (8 - rec_done_bits)) {
+                    cursor++;
+                }
+
+                out_done_bits += 8 - rec_done_bits;
+                out_done_bits %= 8;
+                rec_char = 0;
+                rec_done_bits = 0;
+            } else { //(8 - out_done_bits) < (8 - rec_done_bits)
+                ch = (ch << out_done_bits) & 0XFF;
+                ch >>= out_done_bits;
+                ch <<= (8 - rec_done_bits) - (8 - out_done_bits);
+                rec_char |= ch & 0XFF;
+                rec_done_bits += 8 - out_done_bits;
+                out_done_bits = 0;
+                cursor++;
+            }
+        }
+    }
+
+    // The remaining bits are zeros and lost in '\0 as line break
+    if (repeated_times > 1 && rec_done_bits > 0 && rec_char != 0) {
+        for (i = 0; i < repeated_times; i++) {
+            *decode++ = rec_char;
+        }
+    }
+    return 0;
+}
+
+void print_string_binary(unsigned char * buff) {
+    int i, j;
+    for (i = 0; i < strlen(buff); i++) {
+        char str[8 + 1];
+        itoa(buff[i], str, 2);
+        for (j = 0; j < 8 - strlen(str); j++) {
+            printf("%c", '0');
+        }
+        printf("%s ", str);
+        if ((i + 1) % 7 == 0) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
+void print_usage() {
+    printf("Usage:\n"
+           "1. No parameters\n"
+           "A18.exe\n"
+           "2. Two parameters, source text filename & compressed filename\n"
+           "A18.exe a.txt b.bin\n"
+           "3. One parameter, compressed filename\n"
+           "A18.exe b.bin\n");
 }
