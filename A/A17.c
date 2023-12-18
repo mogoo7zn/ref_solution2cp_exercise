@@ -16,6 +16,7 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #define MAX_LENGTH 1500
 #define TypeLen 4
 #define NumLen 13
@@ -38,7 +39,7 @@ int pair();
 void swap(int *a, int *b);
 void bubbleSort(int *value, int left, int right);
 
-char buffer_all[MAX_LENGTH] = "DK HQ SJ DA ST 0";
+char buffer_all[MAX_LENGTH];
 char judge_type[TypeLen] = {'D', 'C', 'H', 'S'};
 char judge_num[NumLen] = {'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'};
 char type[5];
@@ -46,6 +47,18 @@ char num[5];
 int int_num[5];
 int main(void)
 {
+    memset(buffer_all,-1, MAX_LENGTH);
+    char *tmp = buffer_all;
+    while (scanf("%s", tmp) != EOF){
+        tmp += 3;
+    }
+//    gets(buffer_all);
+    int j = 0;
+    while (buffer_all[j] != -1){
+        j++;
+    }
+    if (j < 15)
+        return 0;
     char *cursor = buffer_all;
     int i;
     while(islegal(cursor) != -1){
@@ -140,7 +153,7 @@ int straight_flush()
         for (j = 0; j < 5; j++){
             int_num_copy[j] = int_num[j];
         }
-        for (j = 4; j > 1; j--){
+        for (j = 4; j > 0; j--){
             int_num_copy[j] = int_num_copy[j - 1];
         }
         int_num_copy[0] = 1;j = 0;
@@ -149,6 +162,11 @@ int straight_flush()
         }
         if(j == 4)
             return 1;
+        for (i = 0; i < 4; i++){
+            if(int_num[i] + 1 != int_num[i + 1])
+                return 0;
+        }
+        return 1;
     }else{
         for (i = 0; i < 4; i++){
             if(int_num[i] + 1 != int_num[i + 1])

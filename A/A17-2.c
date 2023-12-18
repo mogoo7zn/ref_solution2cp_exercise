@@ -120,7 +120,7 @@ int main() {
             }
         }
 
-        if (false == isalpha(ch)) {
+        if (isalpha(ch) == false) {
             continue;
         }
         type = toupper(ch);
@@ -138,7 +138,7 @@ int main() {
 
         if (is_valid_type(type) && is_valid_grade(grade)) {
             CARD card = {get_card_type(type), get_card_grade(grade)};
-            if (false == is_duplicated_card(cards, count, card)) {
+            if (is_duplicated_card(cards, count, card) == false) {
                 cards[count++] = card;
             }
         }
@@ -155,6 +155,7 @@ int get_card_type(char type) {
             return i;
         }
     }
+    return i;
 }
 
 int get_card_grade(char grade) {
@@ -164,6 +165,7 @@ int get_card_grade(char grade) {
             return i;
         }
     }
+    return i;
 }
 
 bool is_valid_type(char type) {
@@ -253,7 +255,7 @@ void analyze_print_cards(PCARD pCards) {
     sort_cards(pCards);
 
     flag = is_straight_flush(pCards);
-    if (false == flag) {
+    if (flag == false) {
         to_little_a_sort_cards(pCards);
         flag = is_straight_flush(pCards);
     }
@@ -278,7 +280,7 @@ void analyze_print_cards(PCARD pCards) {
                     printf ("%s", "Flush:");
                 } else {
                     flag = is_straight(pCards);
-                    if (false == flag) {
+                    if (flag == false) {
                         to_little_a_sort_cards(pCards);
                         flag = is_straight(pCards);
                     }
@@ -344,8 +346,8 @@ bool is_four_of_a_kind(PCARD pCards) {
 }
 
 bool is_full_house(PCARD pCards) {
-    if (pCards[0].grade == pCards[1].grade && pCards[0].grade == pCards[2].grade && pCards[3].grade == pCards[4].grade ||
-        pCards[0].grade == pCards[1].grade && pCards[2].grade == pCards[3].grade && pCards[2].grade == pCards[4].grade) {
+    if ((pCards[0].grade == pCards[1].grade && pCards[0].grade == pCards[2].grade && pCards[3].grade == pCards[4].grade) ||
+            (pCards[0].grade == pCards[1].grade && pCards[2].grade == pCards[3].grade && pCards[2].grade == pCards[4].grade)) {
         return true;
     }
     return false;
