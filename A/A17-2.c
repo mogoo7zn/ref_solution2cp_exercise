@@ -41,33 +41,50 @@ char card_grades[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q'
 char *card_grades_display[] = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"};
 
 int get_card_type(char);
+
 int get_card_grade(char);
 
 bool is_valid_type(char);
+
 bool is_valid_grade(char);
+
 bool is_duplicated_card(PCARD, int, CARD);
 
 void sort_cards(PCARD);
+
 void to_little_a_sort_cards(PCARD);
+
 void to_big_a_sort_cards(PCARD);
 
 void analyze_print_cards(PCARD);
+
 // 1 同花顺 straight flush（同花色且等级顺序相连）
 bool is_straight_flush(PCARD);
+
 // 2 四张 four of a kind（4张牌等级相同）
 bool is_four_of_a_kind(PCARD);
+
 // 3 葫芦 full house（3张牌等级相同，另2张牌也等级相同）
 bool is_full_house(PCARD);
+
 // 4 同花 flush（5张牌花色相同）
 bool is_flush(PCARD);
+
 // 5 顺子 straight（5张牌等级顺序相连）
 bool is_straight(PCARD);
+
 // 6 三张 three of a kind（3张牌等级相同）
 bool is_three_of_a_kind(PCARD);
+
 // 7 两对 two pairs（存在两个对子）
 bool is_two_pairs(PCARD);
+
 // 8 对子 pair（2张牌等级相同）
 bool is_pair(PCARD);
+
+// Internal functions
+bool check_straight_flush(PCARD);
+bool check_straight(PCARD);
 
 /*
  * Test data
@@ -107,36 +124,23 @@ int main() {
         char grade;
 
         char ch = getchar();
-        if ('0' == ch) {
-            return 0;
-        }
 
-        if ('\n' == ch) {
+        if (EOF == ch || '0' == ch) {
             if (HAND_OF_CARDS == count) {
                 analyze_print_cards(cards);
                 count = 0;
-            } else {
-                continue;
             }
+            break;
         }
 
         if (isalpha(ch) == false) {
             continue;
         }
         type = toupper(ch);
+        ch = getchar();
+        grade = toupper(ch);
 
-        while (true) {
-            ch = getchar();
-            if ('0' == ch) {
-                return 0;
-            }
-            if (isalnum(ch)) {
-                grade = toupper(ch);
-                break;
-            }
-        }
-
-        if (is_valid_type(type) && is_valid_grade(grade)) {
+        if (is_valid_type(type) && is_valid_grade(grade) && count < HAND_OF_CARDS) {
             CARD card = {get_card_type(type), get_card_grade(grade)};
             if (is_duplicated_card(cards, count, card) == false) {
                 cards[count++] = card;
@@ -254,79 +258,53 @@ void analyze_print_cards(PCARD pCards) {
 
     sort_cards(pCards);
 
-    flag = is_straight_flush(pCards);
-    if (flag == false) {
-        to_little_a_sort_cards(pCards);
-        flag = is_straight_flush(pCards);
-    }
-
-    if (true == flag) {
-        printf ("%s", "Straight flush:");
+    if (is_straight_flush(pCards)) {
+        printf("%s", "Straight flush:");
+    } else if (is_four_of_a_kind(pCards)) {
+        printf("%s", "Four of a kind:");
+    } else if (is_full_house(pCards)) {
+        printf("%s", "Full house:");
+    } else if (is_flush(pCards)) {
+        printf("%s", "Flush:");
+    } else if (is_straight(pCards)) {
+        printf("%s", "Straight:");
+    } else if (is_three_of_a_kind(pCards)) {
+        printf("%s", "Three of a kind:");
+    } else if (is_two_pairs(pCards)) {
+        printf("%s", "Two pairs:");
+    } else if (is_pair(pCards)) {
+        printf("%s", "Pair:");
     } else {
-        to_big_a_sort_cards(pCards);
-        flag = is_four_of_a_kind(pCards);
-
-        if (true == flag) {
-            printf ("%s", "Four of a kind:");
-        } else {
-            flag = is_full_house(pCards);
-
-            if (true == flag) {
-                printf ("%s", "Full house:");
-            } else {
-                flag = is_flush(pCards);
-
-                if (true == flag) {
-                    printf ("%s", "Flush:");
-                } else {
-                    flag = is_straight(pCards);
-                    if (flag == false) {
-                        to_little_a_sort_cards(pCards);
-                        flag = is_straight(pCards);
-                    }
-
-                    if (true == flag) {
-                        printf ("%s", "Straight:");
-                    } else {
-                        to_big_a_sort_cards(pCards);
-                        flag = is_three_of_a_kind(pCards);
-
-                        if (true == flag) {
-                            printf ("%s", "Three of a kind:");
-                        } else {
-                            flag = is_two_pairs(pCards);
-
-                            if (true == flag) {
-                                printf ("%s", "Two pairs:");
-                            } else {
-                                flag = is_pair(pCards);
-
-                                if (true == flag) {
-                                    printf ("%s", "Pair:");
-                                } else {
-                                    printf ("%s", "Other:");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        printf("%s", "Other:");
     }
 
     for (i = 0; i < HAND_OF_CARDS; i++) {
-        printf (" %c%s", card_types[pCards[i].type], card_grades_display[pCards[i].grade]);
+        printf(" %c%s", card_types[pCards[i].type], card_grades_display[pCards[i].grade]);
     }
-    printf ("\n");
+    printf("\n");
 }
 
 bool is_straight_flush(PCARD pCards) {
+    int i;
+    bool flag = check_straight_flush(pCards);
+
+    if (false == flag) {
+        to_little_a_sort_cards(pCards);
+        flag = check_straight_flush(pCards);
+        to_big_a_sort_cards(pCards);
+    }
+
+    return flag;
+}
+
+bool check_straight_flush(PCARD pCards) {
     int i;
     for (i = 0; i < HAND_OF_CARDS - 1; i++) {
         if (pCards[i].type != pCards[i + 1].type || pCards[i].grade != (pCards[i + 1].grade - 1)) {
             return false;
         }
     }
+
     return true;
 }
 
@@ -346,8 +324,10 @@ bool is_four_of_a_kind(PCARD pCards) {
 }
 
 bool is_full_house(PCARD pCards) {
-    if ((pCards[0].grade == pCards[1].grade && pCards[0].grade == pCards[2].grade && pCards[3].grade == pCards[4].grade) ||
-            (pCards[0].grade == pCards[1].grade && pCards[2].grade == pCards[3].grade && pCards[2].grade == pCards[4].grade)) {
+    if ((pCards[0].grade == pCards[1].grade && pCards[0].grade == pCards[2].grade &&
+         pCards[3].grade == pCards[4].grade) ||
+        (pCards[0].grade == pCards[1].grade && pCards[2].grade == pCards[3].grade &&
+         pCards[2].grade == pCards[4].grade)) {
         return true;
     }
     return false;
@@ -364,6 +344,19 @@ bool is_flush(PCARD pCards) {
 }
 
 bool is_straight(PCARD pCards) {
+    int i;
+    bool flag = check_straight(pCards);
+
+    if (false == flag) {
+        to_little_a_sort_cards(pCards);
+        flag = check_straight(pCards);
+        to_big_a_sort_cards(pCards);
+    }
+
+    return flag;
+}
+
+bool check_straight(PCARD pCards) {
     int i;
     for (i = 0; i < HAND_OF_CARDS - 1; i++) {
         if (pCards[i].grade != (pCards[i + 1].grade - 1)) {
