@@ -7,9 +7,11 @@
 #include <string.h>
 #include <time.h>
 
-#define BN_Size 256
-#define BN_Bits 8
-#define BN_Base 256
+#define BN_SIZE 256
+#define BN_BITS 8
+#define BN_BASE 256
+
+#define DECIMAL_SIZE 512
 
 #define min(a, b) (a<b)?a:b
 #define max(a, b) (a>b)?a:b
@@ -18,7 +20,7 @@
 #define false (!true)
 
 typedef int bool;
-typedef uint8_t BigNumber[BN_Size];
+typedef uint8_t BigNumber[BN_SIZE];
 
 
 // a == b
@@ -101,5 +103,9 @@ void bn_rand_range(BigNumber a, BigNumber b);
 
 // r = a^x mod n
 void bn_pow_mod(BigNumber a, BigNumber x, BigNumber n, BigNumber r);
+
+// Convert number b (radix 10) to a
+// a = b
+void bn_set_decimal(BigNumber a, const uint8_t b[]);
 
 #endif

@@ -1,13 +1,13 @@
 #include "BigNumber.h"
 
-BigNumber bn_cache[BN_Base + 1];
+BigNumber bn_cache[BN_BASE + 1];
 bool bn_cache_empty = true;
 BigNumber bn_lastnum;
 
 // a == b
 bool bn_equal(BigNumber a, BigNumber b) {
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         if (a[i] != b[i]) return false;
     }
     return true;
@@ -16,7 +16,7 @@ bool bn_equal(BigNumber a, BigNumber b) {
 // a < b
 bool bn_less(BigNumber a, BigNumber b) {
     size_t i = 0;
-    for (i = BN_Size - 1; ; i--) {
+    for (i = BN_SIZE - 1; ; i--) {
         if (a[i] < b[i]) return true;
         if (a[i] > b[i]) return false;
         if (i == 0) break;
@@ -27,7 +27,7 @@ bool bn_less(BigNumber a, BigNumber b) {
 // a <= b
 bool bn_less_or_equal(BigNumber a, BigNumber b) {
     size_t i = 0;
-    for (i = BN_Size - 1; ; i--) {
+    for (i = BN_SIZE - 1; ; i--) {
         if (a[i] < b[i]) return true;
         if (a[i] > b[i]) return false;
         if (i == 0) break;
@@ -38,7 +38,7 @@ bool bn_less_or_equal(BigNumber a, BigNumber b) {
 // a == 0
 bool bn_is_zero(BigNumber a) {
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         if (a[i] != 0) return false;
     }
     return true;
@@ -56,7 +56,7 @@ bool bn_is_odd(BigNumber a) {
 
 // a = 0
 void bn_set_zero(BigNumber a) {
-    memset(a, 0, BN_Size);
+    memset(a, 0, BN_SIZE);
 }
 
 // a = 1
@@ -69,26 +69,26 @@ void bn_set_one(BigNumber a) {
 void bn_set(BigNumber a, size_t value) {
     bn_set_zero(a);
     size_t i = 0;
-    while (value > 0 && i < BN_Size) {
-        a[i] = value % BN_Base;
-        value /= BN_Base;
+    while (value > 0 && i < BN_SIZE) {
+        a[i] = value % BN_BASE;
+        value /= BN_BASE;
         i++;
     }
 }
 
 // a = b
 void bn_set_bn(BigNumber a, BigNumber b) {
-    memcpy(a, b, BN_Size);
+    memcpy(a, b, BN_SIZE);
 }
 
 //b = b + a
 void bn_add_bn(BigNumber a, BigNumber b) {
     uint16_t x = 0;
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         x = (uint16_t) b[i] + a[i] + x;
-        b[i] = x % BN_Base;
-        x /= BN_Base;
+        b[i] = x % BN_BASE;
+        x /= BN_BASE;
     }
 }
 
@@ -96,10 +96,10 @@ void bn_add_bn(BigNumber a, BigNumber b) {
 void bn_add_int(uint8_t a, BigNumber b) {
     uint16_t x = a;
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         x = (uint16_t) b[i] + x;
-        b[i] = x % BN_Base;
-        x /= BN_Base;
+        b[i] = x % BN_BASE;
+        x /= BN_BASE;
         if (x == 0) break;
     }
 }
@@ -108,9 +108,9 @@ void bn_add_int(uint8_t a, BigNumber b) {
 void bn_sub_bn(BigNumber a, BigNumber b) {
     uint16_t r = 0;
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         if (b[i] < a[i] + r) {
-            b[i] = r = BN_Base + b[i] - a[i] - r;
+            b[i] = r = BN_BASE + b[i] - a[i] - r;
             r = 1;
         } else {
             b[i] -= r + a[i];
@@ -123,9 +123,9 @@ void bn_sub_bn(BigNumber a, BigNumber b) {
 void bn_sub_int(uint8_t a, BigNumber b) {
     uint16_t r = a;
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         if (b[i] < r) {
-            b[i] = r = BN_Base + b[i] - r;
+            b[i] = r = BN_BASE + b[i] - r;
             r = 1;
         } else {
             b[i] -= r;
@@ -137,9 +137,9 @@ void bn_sub_int(uint8_t a, BigNumber b) {
 //a = a << 8*sh (base 256)
 void bn_shl(BigNumber a, size_t sh) {
     if (sh == 0) return;
-    sh = min(BN_Size, sh);
+    sh = min(BN_SIZE, sh);
     size_t i = 0;
-    for (i = BN_Size - 1; i >= sh; i--) {
+    for (i = BN_SIZE - 1; i >= sh; i--) {
         a[i] = a[i - sh];
     }
 
@@ -151,31 +151,31 @@ void bn_shl(BigNumber a, size_t sh) {
 //a = a >> 8*sh (base 256)
 void bn_shr(BigNumber a, size_t sh) {
     if (sh == 0) return;
-    sh = min(BN_Size, sh);
+    sh = min(BN_SIZE, sh);
     size_t i = 0;
-    for (i = 0; i < BN_Size - sh; i++) {
+    for (i = 0; i < BN_SIZE - sh; i++) {
         a[i] = a[i + sh];
     }
 
     for (i = 0; i < sh; i++) {
-        a[BN_Size - 1 - i] = 0;
+        a[BN_SIZE - 1 - i] = 0;
     }
 }
 
 //a = a << sh
 void bn_shbl(BigNumber a, size_t sh) {
     if (sh == 0) return;
-    bn_shl(a, sh / BN_Bits);
-    sh = sh % BN_Bits;
+    bn_shl(a, sh / BN_BITS);
+    sh = sh % BN_BITS;
     if (sh == 0) return;
 
-    uint16_t mask = BN_Base - (1 << (BN_Bits - sh));
+    uint16_t mask = BN_BASE - (1 << (BN_BITS - sh));
     uint8_t bits0 = 0, bits1 = 0;
     size_t i = 0;
-    for (i = 0; i < BN_Size; ++i) {
+    for (i = 0; i < BN_SIZE; ++i) {
         bits1 = a[i] & mask;
         a[i] <<= sh;
-        a[i] |= bits0 >> (BN_Bits - sh);
+        a[i] |= bits0 >> (BN_BITS - sh);
         bits0 = bits1;
     }
 }
@@ -183,17 +183,17 @@ void bn_shbl(BigNumber a, size_t sh) {
 // a = a >> sh
 void bn_shbr(BigNumber a, size_t sh) {
     if (sh == 0) return;
-    bn_shr(a, sh / BN_Bits);
-    sh = sh % BN_Bits;
+    bn_shr(a, sh / BN_BITS);
+    sh = sh % BN_BITS;
     if (sh == 0) return;
 
     uint16_t mask = (1 << sh) - 1;
     uint8_t bits0 = 0, bits1 = 0;
     size_t i = 0;
-    for (i = BN_Size - 1; ; i--) {
+    for (i = BN_SIZE - 1; ; i--) {
         bits1 = a[i] & mask;
         a[i] >>= sh;
-        a[i] |= bits0 << (BN_Bits - sh);
+        a[i] |= bits0 << (BN_BITS - sh);
         bits0 = bits1;
         if (i == 0) break;
     }
@@ -203,10 +203,10 @@ void bn_shbr(BigNumber a, size_t sh) {
 void bn_mul_int(uint8_t a, BigNumber b) {
     uint16_t r = 0;
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
+    for (i = 0; i < BN_SIZE; i++) {
         r += (uint16_t) a * b[i];
-        b[i] = r % BN_Base;
-        r /= BN_Base;
+        b[i] = r % BN_BASE;
+        r /= BN_BASE;
     }
 }
 
@@ -215,8 +215,8 @@ void bn_mul_bn(BigNumber a, BigNumber b, BigNumber p) {
     BigNumber t;
     bn_set_zero(p);
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
-        memcpy(t, b, BN_Size);
+    for (i = 0; i < BN_SIZE; i++) {
+        memcpy(t, b, BN_SIZE);
         bn_mul_int(a[i], t);
         bn_shl(t, i);
         bn_add_bn(t, p);
@@ -230,7 +230,7 @@ void bn_div_bn(BigNumber a, BigNumber b, BigNumber q, BigNumber r) {
     BigNumber t;
     bn_set_zero(t);
     size_t i = 0;
-    for (i = BN_Size - 1; ; i--) {
+    for (i = BN_SIZE - 1; ; i--) {
         bn_shl(r, 1);
         bn_add_int(b[i], r);
         if (bn_less_or_equal(a, r)) {
@@ -270,7 +270,7 @@ void bn_mod_bn(BigNumber a, BigNumber b, BigNumber r) {
     if (bn_cache_empty || bn_equal(a, bn_lastnum) == false) {
         bn_set_zero(t);
         size_t k;
-        for (k = 0; k <= BN_Base; k++) {
+        for (k = 0; k <= BN_BASE; k++) {
             bn_set_bn(bn_cache[k], t);
             bn_add_bn(a, t);
         }
@@ -278,16 +278,16 @@ void bn_mod_bn(BigNumber a, BigNumber b, BigNumber r) {
     }
 
     size_t i;
-    for (i = BN_Size - 1; ; i--) {
+    for (i = BN_SIZE - 1; ; i--) {
         bn_shl(r, 1);
         bn_add_int(b[i], r);
 
         if (bn_less_or_equal(a, r)) {
-            if (bn_less_or_equal(bn_cache[BN_Base - 1], r)) {
-                bn_sub_bn(bn_cache[BN_Base - 1], r);
+            if (bn_less_or_equal(bn_cache[BN_BASE - 1], r)) {
+                bn_sub_bn(bn_cache[BN_BASE - 1], r);
             } else {
                 int k0 = 0;
-                int k1 = BN_Base;
+                int k1 = BN_BASE;
                 while (k1 != (k0 + 1)) {
                     int m = (k0 + k1) / 2;
                     if (bn_less_or_equal(bn_cache[m], r)) {
@@ -307,8 +307,8 @@ void bn_mod_bn(BigNumber a, BigNumber b, BigNumber r) {
 void bn_mod_int(size_t a, BigNumber b, size_t *r) {
     *r = 0;
     size_t i = 0;
-    for (i = BN_Size - 1; ; i--) {
-        *r = (*r * BN_Base + b[i]) % a;
+    for (i = BN_SIZE - 1; ; i--) {
+        *r = (*r * BN_BASE + b[i]) % a;
         if (i == 0) break;
     }
 }
@@ -317,8 +317,8 @@ void bn_mod_int(size_t a, BigNumber b, size_t *r) {
 void bn_rand(BigNumber a) {
     srand(time(0));
     size_t i = 0;
-    for (i = 0; i < BN_Size; i++) {
-        a[i] = rand() % BN_Base;
+    for (i = 0; i < BN_SIZE; i++) {
+        a[i] = rand() % BN_BASE;
     }
 }
 
@@ -346,5 +346,29 @@ void bn_pow_mod(BigNumber a, BigNumber x, BigNumber n, BigNumber r) {
         bn_shbr(x, 1);
         bn_mul_bn(a, a, t);
         bn_mod_bn(n, t, a);
+    }
+}
+
+// Convert number b (radix 10) to a. b is big-endian big decimal integer
+// a = b
+void bn_set_decimal(BigNumber a, const uint8_t b[]) {
+    size_t ai = 0;
+    uint8_t bc[DECIMAL_SIZE] = {0};
+
+    if (strlen(b) == 0) return;
+
+    strcpy(bc, b);
+    while (strlen(bc) > 0) {
+        size_t k = 0, bci = 0, qi = 0, r = 0;
+        char q[DECIMAL_SIZE] = {0};
+        while (bc[bci] != 0) {
+            k = r * 10 + (bc[bci++] - '0');
+            r = k % BN_BASE;
+            if (k >= BN_BASE || qi > 0) {
+                q[qi++] = k / BN_BASE + '0';
+            }
+        }
+        a[ai++] = r;
+        strcpy(bc, q);
     }
 }

@@ -1,14 +1,36 @@
 #include "MillerRobinPrime.h"
 
 bool verify_given_big_numbers(void);
+bool verify_given_decimal_number(void);
 void evaluate_small_primes_performance(void);
 
 int main() {
 
-    verify_given_big_numbers();
-    evaluate_small_primes_performance();
+    verify_given_decimal_number();
+    //verify_given_big_numbers();
+    //evaluate_small_primes_performance();
 
     return 0;
+}
+
+// Test Miller-Robin primality test function is_prime with sample decimal big integers
+bool verify_given_decimal_number(void) {
+    size_t i;
+    uint8_t b[] = "141391046812018796882845828565364197183213832872558119623989034374349862711961811761756022149157863889079827088948943796770122882454819958822797275540616354581115703212297752621840530234557508806950394391188946374934017297995851398246623558276472465752581909770271848264357732979566326617319645868441609151211";
+    BigNumber a;
+    bn_set_zero(a);
+    bn_set_decimal(a, b);
+
+    printf ("Decimal integer: %s\n", b);
+    printf ("Hex integer: ");
+    for (i = strlen(a) - 1; ; i--) {
+        printf("%.2x", a[i]);
+        if (0 == i) break;
+    }
+    printf("\n");
+
+    bool result = is_prime(a, 100);
+    printf("Test given decimal integer: %s\n", result ? "Prime" : "Composite");
 }
 
 // Test Miller-Robin primality test function is_prime with sample big integers
